@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembuatan dan Tampilan Sertifikat</title>
+    <!-- Include Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #certificate {
+            width: 800px;
+            height: 500px;
+            margin: 50px auto;
+            position: relative;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #header {
+            background-color: #3498db;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1, h2 {
+            margin: 0;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pembuatan dan Tampilan Sertifikat</h1>
+
+        <!-- Pembuatan Sertifikat -->
+        <form id="sertifikatForm">
+            <label for="nama">Nama Penerima:</label>
+            <input type="text" id="nama" required><br>
+
+            <label for="kursus">Nama Kursus:</label>
+            <input type="text" id="kursus" required><br>
+
+            <button type="button" onclick="ajukanPermintaanSertifikat()">Ajukan Permintaan Sertifikat</button>
+        </form>
+
+        <div id="certificateResult" style="display: none;">
+            <p id="resultMessage"></p>
+        </div>
+
+        <!-- Tampilan Sertifikat -->
+        <div id="certificate" style="display: none;">
+            <div id="header">
+                <h1>Sertifikat Pendidikan</h1>
+                <p>Presented to</p>
+            </div>
+            <div id="content">
+                <h2>Nama Penerima</h2>
+                <p id="namaPenerima">[Nama Penerima]</p>
+                <h2>Kursus</h2>
+                <p id="namaKursus">[Nama Kursus]</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if Web3 is available
+        if (typeof web3 !== 'undefined') {
+            // Use the existing web3 object provided by the provider
+            window.web3 = new Web3(web3.currentProvider);
+        } else {
+            // Fallback to a local provider or show an error message
+            console.error('Web3 not detected! Please use a wallet like MetaMask.');
+            // Optionally, provide a fallback URL for local development
+            // window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        }
+    
+        // Replace with your actual contract address and ABI
+        const contractAddress = '0x6d1999a24fDc3A05e6423cBD5C386D94f7d7928a';
+        const contractAbi = [
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+              },
+              {
+                "indexed": false,
+                "internalType": "address",
+                "name": "penerima",
+                "type": "address"
+              },
+              {
+                "indexed": false,
+                "internalType": "string",
+                "name": "nama",
+                "type": "string"
+              },
+              {
+                "indexed": false,
+                "internalType": "string",
+                "name": "kursus",
+                "type": "string"
+              }
+            ],
+            "name": "SertifikatDiterbitkan",
+            "type": "event"
+          },
+          {
+            "inputs": [],
+            "name": "admin",
+            "outputs": [
+              {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "name": "daftarSertifikat",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+              },
+              {
+                "internalType": "address",
+                "name": "penerima",
+                "type": "address"
+              },
+              {
+                "internalType": "string",
+                "name": "nama",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "kursus",
+                "type": "string"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+          },
+          {
+            "inputs": [],
+            "name": "jumlahSertifikat",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function",
+            "constant": true
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "penerima",
+                "type": "address"
+              },
+              {
+                "internalType": "string",
+                "name": "nama",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "kursus",
+                "type": "string"
+              }
+            ],
+            "name": "terbitkanSertifikat",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          }
+        ];
+    
+        // Initialize Web3 contract
+        const blockchainPendidikanContract = new web3.eth.Contract(contractAbi, contractAddress);
+    
+        // Function to handle the creation and display of the certificate
+        async function ajukanPermintaanSertifikat() {
+            try {
+                // Ensure the user has given permission
+                await window.ethereum.enable();
+    
+                // Get Ethereum accounts
+                const accounts = await web3.eth.getAccounts();
+    
+                // Validate Ethereum address
+                if (!accounts.length || !web3.utils.isAddress(accounts[0])) {
+                    throw new Error('Invalid Ethereum address');
+                }
+    
+                // Get input values
+                const nama = document.getElementById('nama').value;
+                const kursus = document.getElementById('kursus').value;
+    
+                // Validate input values
+                if (!nama || !kursus) {
+                    throw new Error('Nama and Kursus must be provided');
+                }
+    
+                // Set a fixed gas value (you can adjust this value as needed)
+                const fixedGasValue = 300000;
+    
+                // Call terbitkanSertifikat function on the smart contract
+                const result = await blockchainPendidikanContract.methods
+                    .terbitkanSertifikat(accounts[0], nama, kursus)
+                    .send({ from: accounts[0], gas: fixedGasValue });
+    
+                // Display success message or perform other desired actions
+                const resultMessage = `Permintaan sertifikat berhasil diajukan untuk ${nama} pada kursus ${kursus}. Transaction hash: ${result.transactionHash}`;
+                document.getElementById('resultMessage').innerText = resultMessage;
+                document.getElementById('certificateResult').style.display = 'block';
+    
+                // Update certificate content
+                document.getElementById('namaPenerima').innerText = nama || '[Nama Penerima]';
+                document.getElementById('namaKursus').innerText = kursus || '[Nama Kursus]';
+    
+                // Show the certificate
+                document.getElementById('certificate').style.display = 'block';
+    
+            } catch (error) {
+                // Handle errors, e.g., display error message to the user
+                console.error('Error:', error.message);
+            }
+        }
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+    "name" : "eth-blockchain-pendidikan",
+    "version" : "1.0.0",
+    "description": "Aplikasi Blockchain dalam Pendidikan",
+    "main": "index.js",
+    "scripts": {
+        "dev": "lite-server",
+        "test": "echo\"Error: no test specified\" && exit 1"
+    },
+    "author": "Renita",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "lite-server": "^2.6.1",
+        "truffle-contract": "4.0.31"
+    }
+}
